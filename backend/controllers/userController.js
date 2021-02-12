@@ -25,7 +25,33 @@ const authUser = asyncHandler(async (req, res) => {
 // @route   POST /api/users
 // @access  Public
 const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, confirmPassword } = req.body;
+  let errors = [];
+  if (!name) {
+    errors.push({ error: 'name', message: 'Name is require.' });
+  }
+  if (!email) {
+    errors.push({ error: 'email', message: 'Email is require.' });
+  }
+  if (!password) {
+    errors.push({ error: 'password', message: 'Password is require.' });
+  }
+  if (!confirmPassword) {
+    errors.push({
+      error: 'confirmPassword',
+      message: 'Confirm Password is require.',
+    });
+  } else if (password) {
+    if (password !== confirmPassword) {
+      errors.push({
+        error: 'confirmPassword',
+        message: 'Passwords do not match.',
+      });
+    }
+  }
+  if (errors.length > 0) {
+    return res.json(errors, 400);
+  }
   const userExists = await User.findOne({ email });
   if (userExists) {
     res.status(400);

@@ -70,7 +70,9 @@ export const logout = () => (dispatch) => {
   dispatch({ type: USER_LIST_RESET });
 };
 
-export const register = (name, email, password) => async (dispatch) => {
+export const register = (name, email, password, confirmPassword) => async (
+  dispatch,
+) => {
   try {
     dispatch({
       type: USER_REGISTER_REQUEST,
@@ -86,6 +88,7 @@ export const register = (name, email, password) => async (dispatch) => {
         name,
         email,
         password,
+        confirmPassword,
       },
       config,
     );
@@ -99,11 +102,42 @@ export const register = (name, email, password) => async (dispatch) => {
     });
     localStorage.setItem('userInfo', JSON.stringify(data));
   } catch (error) {
+    console.log(error.response.data);
+    let errorName = '';
+    let errorEmail = '';
+    let errorPassword = '';
+    let errorConfirmPassword = '';
+    if (error.response.data) {
+      const myError = error.response.data;
+      myError.forEach((currentError) => {
+        switch (currentError.error) {
+          case 'name':
+            errorName = currentError.message;
+            break;
+          case 'email':
+            errorEmail = currentError.message;
+            break;
+          case 'password':
+            errorPassword = currentError.message;
+            break;
+          case 'confirmPassword':
+            errorConfirmPassword = currentError.message;
+            break;
+
+          default:
+            break;
+        }
+      });
+    }
     dispatch({
       type: USER_REGISTER_FAIL,
+      errorName,
+      errorEmail,
+      errorPassword,
+      errorConfirmPassword,
       payload:
-        error.response && error.response.data.message
-          ? error.response.data.message
+        error.response && error.response.data
+          ? error.response.data
           : error.message,
     });
   }
